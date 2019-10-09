@@ -8,7 +8,7 @@ class JourneyIvRepositoryISpec extends AppBaseISpec with MongoDB {
   val repo: JourneyIvRepository = app.injector.instanceOf[JourneyIvRepository]
 
   val testJourneyId: String = repo.journeyId
-  val serviceContract: ServiceContract = ServiceContract("aif","/good" ,"/bad" ,200)
+  val serviceContract: ServiceContract = ServiceContract(None, None, "aif","/good" ,"/bad" ,200)
   val journeyCreation = JourneyCreation(serviceContract, UpliftNino)
   val testJourneyStored: Journey = Journey(testJourneyId, UpliftNino, serviceContract)
 

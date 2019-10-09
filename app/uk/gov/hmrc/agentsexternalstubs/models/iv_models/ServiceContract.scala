@@ -1,6 +1,5 @@
 package uk.gov.hmrc.agentsexternalstubs.models.iv_models
 
-import play.api.libs.functional.syntax._
 import play.api.libs.json._
 import uk.gov.hmrc.domain.Nino
 import uk.gov.hmrc.play.json.Mappings
@@ -22,28 +21,15 @@ object JourneyCreation {
   implicit val format: OFormat[JourneyCreation] = Json.format[JourneyCreation]
 }
 
-case class ServiceContract(origin: String, completionURL: String, failureURL: String, confidenceLevel: Int)
+case class ServiceContract(
+  nino: Option[Nino],
+  reason: Option[String],
+  origin: String,
+  completionURL: String,
+  failureURL: String,
+  confidenceLevel: Int)
 
 object ServiceContract {
-
-//  implicit val reads: Reads[ServiceContract] = (
-//    (__ \ "origin").read[String] and
-//      (__ \ "completionURL").read[String] and
-//      (__ \ "failureURL").read[String] and
-//      (__ \ "confidenceLevel").read[Int]
-//  ) { (origin: String, completionURL: String, failureURL: String, confidenceLevel: Int) =>
-//    ServiceContract(origin, completionURL, failureURL, confidenceLevel)
-//  }
-//
-//  implicit val writes: Writes[ServiceContract] = new Writes[ServiceContract] {
-//    override def writes(o: ServiceContract): JsValue =
-//      Json.obj(
-//        "origin"          -> o.origin,
-//        "completionURL"   -> o.completionURL,
-//        "failureURL"      -> o.failureURL,
-//        "confidenceLevel" -> o.confidenceLevel)
-//  }
-
   implicit val format: OFormat[ServiceContract] = Json.format[ServiceContract]
 }
 
