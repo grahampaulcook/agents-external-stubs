@@ -76,7 +76,10 @@ case class EnrolmentPredicate(
   override def validate(context: AuthoriseContext): Either[String, Unit] =
     (delegatedAuthRule, identifiers) match {
       case (Some(rule), Some(identifierSeq)) =>
-        if (context.hasDelegatedAuth(rule, identifierSeq)) Right(()) else Left("Delegated auth not granted.")
+        context.agentCode match {
+          case Some(_)  => if (context.hasDelegatedAuth(rule, identifierSeq)) Right(()) else Left("Delegated auth not granted.")
+          case None     => Right()
+        }
       case (Some(rule), None) =>
         Left(s"Missing predicate part: delegated $rule enrolment identifiers")
       case (None, _) =>

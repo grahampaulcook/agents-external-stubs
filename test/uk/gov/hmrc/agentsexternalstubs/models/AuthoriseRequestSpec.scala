@@ -1,5 +1,6 @@
 package uk.gov.hmrc.agentsexternalstubs.models
 
+import org.mockito.{ArgumentMatcher, ArgumentMatchers}
 import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.UnitSpec
 import org.mockito.Mockito._
@@ -217,6 +218,39 @@ class AuthoriseRequestSpec extends UnitSpec {
       predicate.validate(context) shouldBe Left("InsufficientEnrolments")
     }
 
+    "accept if user has delegated auth rule & identifiers and is granted delegation" in {
+      val delegatedRule = "rule-xyz"
+      val userIdentifiers = Seq(Identifier("bar", "1234556789"))
+      val context = mock(classOf[AuthoriseContext])
+
+      when(context.agentCode).thenReturn(Some("agentCode123"))
+      when(context.hasDelegatedAuth(delegatedRule, userIdentifiers)).thenReturn(true)
+
+      EnrolmentPredicate(
+        delegatedAuthRule = Some(delegatedRule),
+        enrolment = "foo",
+        identifiers = Some(userIdentifiers)
+      ).validate(context) shouldBe Right(())
+
+      verify(context).hasDelegatedAuth(delegatedRule, userIdentifiers)
+    }
+
+    "accept if user has delegated auth rule & identifiers but has no agent code" in {
+      val delegatedRule = "rule-xyz"
+      val userIdentifiers = Seq(Identifier("bar", "1234556789"))
+      val context = mock(classOf[AuthoriseContext])
+
+      when(context.agentCode).thenReturn(None)
+
+      EnrolmentPredicate(
+        delegatedAuthRule = Some(delegatedRule),
+        enrolment = "foo",
+        identifiers = Some(userIdentifiers)
+      ).validate(context) shouldBe Right(())
+
+      verify(context, times(0)).hasDelegatedAuth(delegatedRule, userIdentifiers)
+    }
+
     "reject if user has the enrolment key expected but doesn't match" in {
       val context = mock(classOf[AuthoriseContext])
       when(context.principalEnrolments).thenReturn(Seq(Enrolment("bar")))
@@ -240,6 +274,34 @@ class AuthoriseRequestSpec extends UnitSpec {
       val predicate = EnrolmentPredicate("foo", Some(Seq(Identifier("bar", "987654321"))))
       predicate.validate(context) shouldBe Left("InsufficientEnrolments")
     }
+
+    "reject if user has delegated auth rule & identifiers but is not granted delegation" in {
+      val delegatedRule = "rule-xyz"
+      val userIdentifiers = Seq(Identifier("bar", "1234556789"))
+      val context = mock(classOf[AuthoriseContext])
+
+      when(context.agentCode).thenReturn(Some("agentCode123"))
+      when(context.hasDelegatedAuth(delegatedRule, userIdentifiers)).thenReturn(false)
+
+      EnrolmentPredicate(
+        delegatedAuthRule = Some(delegatedRule),
+        enrolment = "foo",
+        identifiers = Some(userIdentifiers)
+      ).validate(context) shouldBe Left("Delegated auth not granted.")
+
+      verify(context).hasDelegatedAuth(delegatedRule, userIdentifiers)
+    }
+
+    "reject if user has delegated auth rule but has no identifiers" in {
+      val delegatedRule = "rule-xyz"
+      val context = mock(classOf[AuthoriseContext])
+
+      EnrolmentPredicate(
+        delegatedAuthRule = Some(delegatedRule),
+        enrolment = "foo"
+      ).validate(context) shouldBe Left(s"Missing predicate part: delegated $delegatedRule enrolment identifiers")
+    }
+
   }
 
   "HasNino predicate" should {

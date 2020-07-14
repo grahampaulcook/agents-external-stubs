@@ -23,11 +23,11 @@ class AgentAccessControlConnectorISpec
       "return true" in {
         WireMock.stubFor(
           WireMock
-            .get(urlEqualTo("/agent-access-control/epaye-auth/agent/FOO/client/BAR"))
+            .get(urlEqualTo("/agent-access-control/epaye-auth/agent/FOO/client/123%2FAB456"))
             .willReturn(aResponse()
               .withStatus(200)))
 
-        val result = await(connector.isAuthorisedForPaye("FOO", "BAR"))
+        val result = await(connector.isAuthorisedForPaye("FOO", "123/AB456"))
 
         result shouldBe true
       }
@@ -35,11 +35,11 @@ class AgentAccessControlConnectorISpec
       "return false" in {
         WireMock.stubFor(
           WireMock
-            .get(urlEqualTo("/agent-access-control/epaye-auth/agent/FOO/client/BAR"))
+            .get(urlEqualTo("/agent-access-control/epaye-auth/agent/FOO/client/123%2FAB456"))
             .willReturn(aResponse()
               .withStatus(401)))
 
-        val result = await(connector.isAuthorisedForPaye("FOO", "BAR"))
+        val result = await(connector.isAuthorisedForPaye("FOO", "123/AB456"))
 
         result shouldBe false
       }
